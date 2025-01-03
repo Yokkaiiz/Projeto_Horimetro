@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contador</title>
+    <style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 60px;
+    padding-inline: 100px;
+    border-radius: 16px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    padding-left: 15%;
+    padding-right: 15%;
+}
+
+.container-int {
+    text-align: center;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    padding-left: 15%;
+    padding-right: 15%;
+}
+
+.elite {
+    width: 350px;
+    padding-top: 13%;
+    padding-bottom: 5%;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+#contador {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #084485fd;
+}
+
+.horas {
+    color: rgb(29, 41, 68);
+}
+
+input:focus {
+    outline: none; /* Remove o contorno padrão */
+    box-shadow: 0 0 5px rgba(5, 120, 196, 0.979); /* Efeito de brilho */
+  }
+  
+
+input[type="text"] {
+    padding: 10px;
+    font-size: 1rem;
+    width: 80%;
+    margin-bottom: 14px;
+    margin-top: 4px;
+    border: 1px solid #030303;
+    border-radius: 5px;
+    color: #000000;
+}
+
+input[type="text"]:hover {
+    background-color: #0057b33d; /* Fundo ao passar o mouse */
+    transition: background-color 0.3 ease; /* Transição suave */
+}
+
+input::placeholder {
+    color: #020f3b; /* Cor do placeholder */
+    font-style: italic; /* Estilo da fonte */
+    opacity: 0.7; /* Transparência */
+}
+  
+
+button {
+    padding: 10px 38px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #003064;
+}
+
+/* Adicione o CSS do pop-up aqui */
+.popup {
+    position: fixed;
+    bottom: 14%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 22px;
+    text-align: center;
+    border-radius: 8px;
+    display: none;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.popup.show {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.popup.hide {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+#popup-close {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+#popup-close:hover {
+    background-color: #0056b3;
+}
+    </style>
+</head>
+<body>
+    <div class="container" id="setup-container">
+        <h1 class="horas">Configuração da Máquina</h1>
+        <input type="text" id="machine-name" placeholder="Digite o nome da máquina">
+        <button id="start-button">INICIAR</button>
+    </div>
+
+    <div class="container-int" id="counter-container" style="display: none;">
+        <img class="elite" src=https://i.postimg.cc/2y3RhXW4/logo-elite.jpg alt="elite">
+        <h1 class="horas" id="machine-title">HORÍMETRO</h1>
+        <div id="contador">
+            <span id="horas">00</span>:<span id="minutos">00</span>:<span id="segundos">00</span>
+        </div>
+    </div>
+
+    <div class="popup" id="popup-alert">
+        <p id="popup-message">Por favor, insira o nome da máquina.</p>
+        <button id="popup-close">Fechar</button>
+    </div>
+
+    <script>
+        let segundos = 0;
+        let minutos = 0;
+        let horas = 0;
+        let contadorAtivo = false;
+    
+        function atualizarContador() {
+            if (!contadorAtivo) return;
+            segundos++;
+            if (segundos >= 60) {
+                segundos = 0;
+                minutos++;
+                if (minutos >= 60) {
+                    minutos = 0;
+                    horas++;
+                }
+            }
+    
+            document.getElementById("horas").textContent = horas.toString().padStart(2, '0');
+            document.getElementById("minutos").textContent = minutos.toString().padStart(2, '0');
+            document.getElementById("segundos").textContent = segundos.toString().padStart(2, '0');
+        }
+    
+        setInterval(atualizarContador, 1000);
+    
+        document.getElementById("start-button").addEventListener("click", function () {
+            const machineName = document.getElementById("machine-name").value.trim();
+            
+            if (machineName) {
+                document.getElementById("machine-title").textContent = `HORÍMETRO DA MÁQUINA: ${machineName}`;
+    
+                // Envia o nome da máquina para o servidor
+                fetch("/set_machine_name", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ name: machineName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    showPopup("Nome da máquina salvo com sucesso!");
+                })
+                .catch(error => {
+                    console.error("Erro ao enviar o nome da máquina:", error);
+                    showPopup("Nome da máquina salvo com sucesso!.");
+                });
+    
+                // Exibe o contador
+                document.getElementById("setup-container").style.display = "none";
+                document.getElementById("counter-container").style.display = "block";
+                contadorAtivo = true;
+            } else {
+                showPopup("Por favor, insira o nome da máquina.");
+            }
+        });
+    
+        function showPopup(message) {
+            const popup = document.getElementById("popup-alert");
+            const popupMessage = document.getElementById("popup-message");
+    
+            popupMessage.textContent = message;
+            popup.classList.add("show");
+    
+            setTimeout(() => {
+                popup.classList.add("hide");
+                setTimeout(() => {
+                    popup.classList.remove("show", "hide");
+                }, 300);
+            }, 3000);
+        }
+    
+        document.getElementById("popup-close").addEventListener("click", function () {
+            const popup = document.getElementById("popup-alert");
+            popup.classList.add("hide");
+            setTimeout(() => {
+                popup.classList.remove("show", "hide");
+            }, 300);
+        });
+    </script>
+    
+</body>
+</html>
